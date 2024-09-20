@@ -34,9 +34,9 @@ class MovimentacoesController extends Controller
     {
         $validatedData = $request->validate([
             'produtos' => 'required|array',
-            'produtos.*.nome' => 'required|string', // Nome é obrigatório e deve ser uma string
-            'produtos.*.quantidade' => 'required|integer|min:1', // Quantidade é obrigatória, deve ser um inteiro e maior que 0
-            'produtos.*.valor' => 'required|numeric|min:0', // Valor é obrigatório, deve ser um número e maior ou igual a 0
+            'produtos.*.nome' => 'required|string', 
+            'produtos.*.quantidade' => 'required|integer|min:1', 
+            'produtos.*.valor' => 'required|numeric|min:0', 
             'formas_pagamento' => 'required|string',
             'cadastro_id' => 'required|exists:cadastros,id',
             'bloqueado' => 'boolean',
@@ -55,9 +55,19 @@ class MovimentacoesController extends Controller
             'bloqueado.boolean' => 'O campo bloqueado deve ser verdadeiro ou falso.',
         ]);
     
-        // Se a validação passar, cria a movimentação
         $movimentacoes = Movimentacao::create($validatedData);
     
         return response()->json($movimentacoes, 201);
+    }
+
+    public function destroy(Request $request, $id){
+        $movimentacao = Movimentacao::find($id);
+        if(!$movimentacao) {
+            return response()->json(['message' => 'Movimentação não encontrada'], 404);
+        }   
+        else {
+            $movimentacao->delete();
+            return response()->json(['message' => 'Movimentacao excluída com sucesso'], 200);
+        }   
     }
 }
