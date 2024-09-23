@@ -23,6 +23,7 @@ Route::prefix('cadastro')->group(function(){
 
 Route::prefix('movimentacao')->group(function(){
     Route::get('/', [MovimentacoesController::class, 'index']);
+    Route::get('/export', [MovimentacoesController::class, 'export']);
     Route::post('/',[MovimentacoesController::class, 'store']);
     Route::delete('/{id}',[MovimentacoesController::class, 'destroy']);
 });

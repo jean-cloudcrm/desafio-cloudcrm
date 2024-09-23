@@ -15,8 +15,9 @@ Route::prefix('cadastro')->group(function(){
 
 Route::prefix('movimentacao')->group(function(){
     Route::get('/', [MovimentacoesController::class, 'index']);
+    Route::get('/export', [MovimentacoesController::class, 'export']);
     Route::post('/',[MovimentacoesController::class, 'store']);
-    Route::get('/', [MovimentacoesController::class, 'show']);
+    Route::delete('/{id}',[MovimentacoesController::class, 'destroy']);
 });
 
 Route::fallback(function(){

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 use App\Models\Movimentacao;
 use App\Models\Cadastro;
+use League\Csv\Writer;
+use League\Csv\CharsetConverter;
 
 use Illuminate\Http\Request;
 
@@ -29,7 +31,63 @@ class MovimentacoesController extends Controller
         
             return response()->json($movimentacoes, 200);
         }
+        
     }
+
+    public function export(Request $request)
+{
+    // Obtém as movimentações com a relação de cadastro
+    $movimentacoes = Movimentacao::with('cadastro')->get();
+
+    // Cria o objeto CSV
+    $csv = Writer::createFromFileObject(new \SplTempFileObject());
+    
+    // Define o cabeçalho do CSV
+    $csv->insertOne(['nome_produto', 'quantidade_produto', 'valor_produto', 'formas_pagamento', 'cadastro_nome', 'cadastro_email', 'cadastro_birthday', 'bloqueado']);
+
+    // Itera sobre cada movimentação
+    foreach ($movimentacoes as $movimentacao) {
+        // Decodifica os produtos JSON
+        $produtos = is_array($movimentacao->produtos) ? $movimentacao->produtos : json_decode($movimentacao->produtos, true);
+
+        // Para cada produto, insira uma nova linha no CSV
+        foreach ($produtos as $produto) {
+            // Transforma a coluna 'bloqueado'
+            $bloqueado = $movimentacao->bloqueado ? 'SIM' : 'NÃO';
+
+            // Verifica se a relação cadastro existe
+            $cadastroNome = $movimentacao->cadastro->nome ?? 'N/A';
+            $cadastroEmail = $movimentacao->cadastro->email ?? 'N/A';
+            $cadastroBirthday = $movimentacao->cadastro->birthday ?? 'N/A';
+
+            // Adiciona os dados correspondentes a cada cabeçalho
+            $csv->insertOne([
+                $produto['nome'],              // nome_produto
+                $produto['quantidade'],        // quantidade_produto
+                $produto['valor'],             // valor_produto
+                $movimentacao->formas_pagamento, // formas_pagamento
+                $cadastroNome,                 // cadastro_nome
+                $cadastroEmail,                // cadastro_email
+                $cadastroBirthday,             // cadastro_birthday
+                $bloqueado                     // bloqueado
+            ]);
+        }
+    }
+
+    // Define o tipo de conteúdo e o nome do arquivo
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="movimentacoes.csv"');
+
+    // Saída do CSV
+    $csv->output();
+}
+
+
+
+
+    
+
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([
