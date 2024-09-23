@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignIdFor(Cadastro::class)->constrained()->onDelete('cascade');
             $table->enum('formas_pagamento', ['credito', 'debito','boleto','pix']);
             $table->boolean('bloqueado');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
