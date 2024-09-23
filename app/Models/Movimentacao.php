@@ -4,11 +4,14 @@ namespace App\Models;
 use App\Models\Cadastro;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
 class Movimentacao extends Model
 {
     use HasFactory;
+    use SoftDeletes;
+
     protected $fillable=[
         'produtos',
         'formas_pagamento',
