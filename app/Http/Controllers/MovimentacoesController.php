@@ -38,15 +38,28 @@ class MovimentacoesController extends Controller
     public function export(Request $request)
     {
         $ultimos30Dias = $request->input('ultimos30dias', false);
+        $mes = $request->input('mes', false);
+        $ano = $request->input('ano', false);
     
         if ($ultimos30Dias) {
             $dataLimite = \Carbon\Carbon::now()->subDays(30);
-            $hoje = \Carbon\Carbon::now(); 
+            $hoje = \Carbon\Carbon::now();
     
             $movimentacoes = Movimentacao::with('cadastro')
                 ->whereBetween('created_at', [$dataLimite, $hoje])
                 ->get();
-        } else {
+        }
+        elseif ($mes && $ano) {
+            if (checkdate($mes, 1, $ano)) {
+                $movimentacoes = Movimentacao::with('cadastro')
+                    ->whereYear('created_at', $ano)
+                    ->whereMonth('created_at', $mes)
+                    ->get();
+            } else {
+                return response()->json(['error' => 'Mês ou ano inválidos.'], 400);
+            }
+        } 
+        else {
             $movimentacoes = Movimentacao::with('cadastro')->get();
         }
     
