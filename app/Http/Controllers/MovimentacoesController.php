@@ -34,6 +34,8 @@ class MovimentacoesController extends Controller
         
     }
 
+
+
     public function export(Request $request)
 {
     // Obtém as movimentações com a relação de cadastro
@@ -41,17 +43,33 @@ class MovimentacoesController extends Controller
 
     // Cria o objeto CSV
     $csv = Writer::createFromFileObject(new \SplTempFileObject());
-    
+
+    // Verifica se o suporte a stream filter está ativado para escrita
+    if ($csv->supportsStreamFilterOnWrite()) {
+        // Adiciona o filtro de conversão de charset
+        $csv->addStreamFilter(CharsetConverter::addTo('utf-8', 'iso-8859-1'));
+    }
+
     // Define o cabeçalho do CSV
     $csv->insertOne(['nome_produto', 'quantidade_produto', 'valor_produto', 'formas_pagamento', 'cadastro_nome', 'cadastro_email', 'cadastro_birthday', 'bloqueado']);
 
     // Itera sobre cada movimentação
     foreach ($movimentacoes as $movimentacao) {
-        // Decodifica os produtos JSON
+        // Decodifica os produtos JSON, adicionando um fallback para um array vazio se a decodificação falhar
         $produtos = is_array($movimentacao->produtos) ? $movimentacao->produtos : json_decode($movimentacao->produtos, true);
+
+        // Verifica se a decodificação foi bem-sucedida
+        if (!is_array($produtos)) {
+            $produtos = [];
+        }
 
         // Para cada produto, insira uma nova linha no CSV
         foreach ($produtos as $produto) {
+            // Garante que o produto tenha as chaves necessárias (tratamento de erro)
+            $nomeProduto = $produto['nome'] ?? 'N/A';  // Se não houver chave 'nome', usa 'N/A'
+            $quantidadeProduto = $produto['quantidade'] ?? '0'; // Se não houver chave 'quantidade', usa '0'
+            $valorProduto = $produto['valor'] ?? '0.00'; // Se não houver chave 'valor', usa '0.00'
+
             // Transforma a coluna 'bloqueado'
             $bloqueado = $movimentacao->bloqueado ? 'SIM' : 'NÃO';
 
@@ -62,14 +80,14 @@ class MovimentacoesController extends Controller
 
             // Adiciona os dados correspondentes a cada cabeçalho
             $csv->insertOne([
-                $produto['nome'],              // nome_produto
-                $produto['quantidade'],        // quantidade_produto
-                $produto['valor'],             // valor_produto
+                $nomeProduto,                 // nome_produto
+                $quantidadeProduto,           // quantidade_produto
+                $valorProduto,                // valor_produto
                 $movimentacao->formas_pagamento, // formas_pagamento
-                $cadastroNome,                 // cadastro_nome
-                $cadastroEmail,                // cadastro_email
-                $cadastroBirthday,             // cadastro_birthday
-                $bloqueado                     // bloqueado
+                $cadastroNome,                // cadastro_nome
+                $cadastroEmail,               // cadastro_email
+                $cadastroBirthday,            // cadastro_birthday
+                $bloqueado                    // bloqueado
             ]);
         }
     }
@@ -80,14 +98,11 @@ class MovimentacoesController extends Controller
 
     // Saída do CSV
     $csv->output();
+
+    // Interrompe a execução para garantir que o CSV seja baixado corretamente
+    exit;
 }
-
-
-
-
     
-
-
     public function store(Request $request)
     {
         $validatedData = $request->validate([
