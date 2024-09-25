@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CadastrosController;
 use App\Http\Controllers\MovimentacoesController;
+use App\Http\Controllers\ProdutosController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,12 @@ Route::prefix('cadastro')->group(function(){
 Route::prefix('movimentacao')->group(function(){
     Route::get('/', [MovimentacoesController::class, 'index']);
     Route::get('/export', [MovimentacoesController::class, 'export']);
+    //Route::get('/somaCredito', [MovimentacoesController::class, 'somaCredito']);
     Route::post('/',[MovimentacoesController::class, 'store']);
     Route::delete('/{id}',[MovimentacoesController::class, 'destroy']);
+});
+
+Route::prefix('produto')->group(function(){
+    Route::get('/', [ProdutosController::class, 'index']);
+    Route::post('/', [ProdutosController::class, 'store']);
 });

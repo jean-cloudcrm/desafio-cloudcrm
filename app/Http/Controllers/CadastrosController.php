@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cadastro;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class CadastrosController extends Controller
 {
@@ -45,18 +46,19 @@ class CadastrosController extends Controller
 
     public function store(Request $request)
     {
-
-    if($request->expectsJson()){
-        $cadastro = Cadastro::create([
-            'nome' => $request->nome,
-            'email' => $request->email,
-            'birthday' => $request->birthday,
-        ]);
     
+    if($request->expectsJson()){
+        $validatedData = $request->validate([
+            'nome' => 'required|string',
+            'email' => 'required|string',
+            'birthday' => 'required|date_format:d/m/Y',
+        ]);
+        $validatedData['birthday']= \Carbon\Carbon::createFromFormat('d/m/Y',$validatedData['birthday'])->format('Y-m-d');
+
+        $cadastro = Cadastro::create($validatedData);
         return response()->json($cadastro, 201); 
     }    
     
-
     return redirect()->route('cadastro-index');
     }
 
