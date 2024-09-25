@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 use App\Models\Movimentacao;
 use App\Models\Cadastro;
+use League\Csv\Writer;
+use League\Csv\CharsetConverter;
+use Carbon\Carbon;
 
 use Illuminate\Http\Request;
 
@@ -29,7 +32,83 @@ class MovimentacoesController extends Controller
         
             return response()->json($movimentacoes, 200);
         }
+        
     }
+
+    public function export(Request $request)
+    {
+        $ultimos30Dias = $request->input('ultimos30dias', false);
+        $mes = $request->input('mes', false);
+        $ano = $request->input('ano', false);
+    
+        if ($ultimos30Dias) {
+            $dataLimite = \Carbon\Carbon::now()->subDays(30);
+            $hoje = \Carbon\Carbon::now();
+    
+            $movimentacoes = Movimentacao::with('cadastro')
+                ->whereBetween('created_at', [$dataLimite, $hoje])
+                ->get();
+        }
+        elseif ($mes && $ano) {
+            if (checkdate($mes, 1, $ano)) {
+                $movimentacoes = Movimentacao::with('cadastro')
+                    ->whereYear('created_at', $ano)
+                    ->whereMonth('created_at', $mes)
+                    ->get();
+            } else {
+                return response()->json(['error' => 'Mês ou ano inválidos.'], 400);
+            }
+        } 
+        else {
+            $movimentacoes = Movimentacao::with('cadastro')->get();
+        }
+    
+        $csv = Writer::createFromFileObject(new \SplTempFileObject());
+    
+        if ($csv->supportsStreamFilterOnWrite()) {
+            $csv->addStreamFilter(CharsetConverter::addTo('utf-8', 'iso-8859-1'));
+        }
+        $csv->insertOne(['nome_produto', 'quantidade_produto', 'valor_produto', 'formas_pagamento', 'nome_usuario', 'email_usuario', 'data_nascimento_usuario', 'bloqueado', 'created_at']);
+    
+        foreach ($movimentacoes as $movimentacao) {
+            $produtos = is_array($movimentacao->produtos) ? $movimentacao->produtos : json_decode($movimentacao->produtos, true);
+    
+            if (!is_array($produtos)) {
+                $produtos = [];
+            }
+    
+            foreach ($produtos as $produto) {
+                $nomeProduto = $produto['nome'] ?? 'N/A'; 
+                $quantidadeProduto = $produto['quantidade'] ?? '0'; 
+                $valorProduto = $produto['valor'] ?? '0.00'; 
+                $bloqueado = $movimentacao->bloqueado ? 'SIM' : 'NÃO';
+                $created_at = $movimentacao->created_at;
+                $nomeUsuario = $movimentacao->cadastro->nome ?? 'N/A';
+                $emailUsuario = $movimentacao->cadastro->email ?? 'N/A';
+                $dataNascimentoUsuario = $movimentacao->cadastro->birthday ?? 'N/A';
+    
+                $csv->insertOne([
+                    $nomeProduto,               
+                    $quantidadeProduto,          
+                    $valorProduto,               
+                    $movimentacao->formas_pagamento, 
+                    $nomeUsuario,              
+                    $emailUsuario,             
+                    $dataNascimentoUsuario,          
+                    $bloqueado,
+                    $created_at                 
+                ]);
+            }
+        }
+    
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="movimentacoes.csv"');
+    
+        $csv->output();
+    
+        exit;
+    }
+    
     public function store(Request $request)
     {
         $validatedData = $request->validate([
