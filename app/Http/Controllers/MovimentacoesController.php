@@ -45,7 +45,10 @@ public function export(Request $request)
         $movimentacoes = Movimentacao::with('cadastro', 'produtos')
             ->whereBetween('created_at', [$dataLimite, \Carbon\Carbon::now()])
             ->get();
-    } elseif ($mes = $request->input('mes') && $ano = $request->input('ano')) {
+    } elseif ($request->input('mes') && $request->input('ano')) {
+        $mes = $request->input('mes');
+        $ano = $request->input('ano');
+        
         $movimentacoes = Movimentacao::with('cadastro', 'produtos')
             ->whereYear('created_at', $ano)
             ->whereMonth('created_at', $mes)
@@ -103,7 +106,7 @@ public function totalCredito()
                 'id' => $usuarioId,
                 'nome' => $movimentacao->cadastro->nome,
                 'email' => $movimentacao->cadastro->email,
-                'total_credito' => 0 
+                'total_credito' => 0 ,
             ];
         }
 
