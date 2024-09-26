@@ -45,22 +45,28 @@ class CadastrosController extends Controller
 
 
     public function store(Request $request)
-    {
-    
-    if($request->expectsJson()){
+{
+    if ($request->expectsJson()) {
         $validatedData = $request->validate([
             'nome' => 'required|string',
-            'email' => 'required|string',
+            'email' => 'required|string|email',
             'birthday' => 'required|date_format:d/m/Y',
         ]);
-        $validatedData['birthday']= \Carbon\Carbon::createFromFormat('d/m/Y',$validatedData['birthday'])->format('Y-m-d');
+        
+        $birthday = \Carbon\Carbon::createFromFormat('d/m/Y', $validatedData['birthday']);
 
-        $cadastro = Cadastro::create($validatedData);
+        if ($birthday->diffInYears() < 18) {
+            return response()->json(['message' => 'Somente maiores de 18 anos podem ser cadastrados.'], 403);
+        }
+        $cadastro = Cadastro::create(array_merge($validatedData, [
+            'birthday' => $birthday 
+        ]));
+
         return response()->json($cadastro, 201); 
-    }    
-    
-    return redirect()->route('cadastro-index');
     }
+
+    return redirect()->route('cadastro-index');
+}
 
     public function edit($id)
     {
@@ -101,7 +107,16 @@ class CadastrosController extends Controller
             }
             return redirect()->route('cadastro-index');
         }
+
+        if ($cadastro->movimentacao()->exists()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Não é possível excluir o cadastro porque tem movimentações relacionadas a esse cadastro.'], 403);
+            }
+            return redirect()->route('cadastro-index')->with('error', 'Não é possível excluir o cadastro, pois existem movimentações associadas.');
+        }
+
         $cadastro->delete();
+
         if ($request->expectsJson()) {
             return response()->json(['message' =>'Cadastro excluído com sucesso'], 200);
         }
