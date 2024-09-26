@@ -211,27 +211,31 @@ public function totalCredito()
     }
     
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'cadastro_id' => 'required|exists:cadastros,id', 
-            'formas_pagamento' => 'required|in:credito,debito,boleto,pix',
-            'bloqueado' => 'boolean',
-            'produtos' => 'required|array',
-            'produtos.*' => 'required|exists:produtos,id', 
-        ]);
-    
-        $movimentacao = Movimentacao::create([
-            'cadastro_id' => $validated['cadastro_id'],
-            'formas_pagamento' => $validated['formas_pagamento'],
-            'bloqueado' => $validated['bloqueado'],
-        ]);
-    
-        foreach ($validated['produtos'] as $produtoId) {
-            $movimentacao->produtos()->attach($produtoId);
-        }
-    
-        return response()->json(['message' => 'Movimentação criada com sucesso!'], 201);
+{
+    $validated = $request->validate([
+        'cadastro_id' => 'required|exists:cadastros,id', 
+        'formas_pagamento' => 'required|in:credito,debito,boleto,pix',
+        'bloqueado' => 'boolean',
+        'produtos' => 'required|array',
+        'produtos.*' => 'required|exists:produtos,id', 
+    ]);
+
+    if ($validated['bloqueado']) {
+        return response()->json(['message' => 'A movimentação está bloqueada e não pode ser cadastrada.'], 403);
     }
+
+    $movimentacao = Movimentacao::create([
+        'cadastro_id' => $validated['cadastro_id'],
+        'formas_pagamento' => $validated['formas_pagamento'],
+        'bloqueado' => $validated['bloqueado'],
+    ]);
+
+    foreach ($validated['produtos'] as $produtoId) {
+        $movimentacao->produtos()->attach($produtoId);
+    }
+
+    return response()->json(['message' => 'Movimentação criada com sucesso!'], 201);
+}
 
     public function destroy(Request $request, $id){
         $movimentacao = Movimentacao::find($id);
