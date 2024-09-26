@@ -27,7 +27,7 @@
     php artisan serve
 
 # Documentação da API no formato insomnia:
-    1. Baixe o arquivo [Insomnia_2024-09-26.json](./docs/Insomnia_2024-09-26.json).
+    1. Baixe o arquivo Insomnia_2024-09-26.json/docs/Insomnia_2024-09-26.json
     2. No Insomnia, clique no menu no canto superior esquerdo (três linhas horizontais).
     3. Selecione **Import/Export**.
     4. Clique em **Import Data** e depois em **From File**.
