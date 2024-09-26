@@ -25,7 +25,9 @@ Route::prefix('cadastro')->group(function(){
 Route::prefix('movimentacao')->group(function(){
     Route::get('/', [MovimentacoesController::class, 'index']);
     Route::get('/export', [MovimentacoesController::class, 'export']);
-    //Route::get('/somaCredito', [MovimentacoesController::class, 'somaCredito']);
+    Route::get('/totalCredito', [MovimentacoesController::class, 'totalCredito']);
+    Route::get('/totalDebito', [MovimentacoesController::class, 'totalDebito']);
+    Route::get('/totalCreditoDebito', [MovimentacoesController::class, 'totalCreditoDebito']);
     Route::post('/',[MovimentacoesController::class, 'store']);
     Route::delete('/{id}',[MovimentacoesController::class, 'destroy']);
 });

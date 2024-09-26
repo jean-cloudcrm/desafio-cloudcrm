@@ -78,16 +78,138 @@ public function export(Request $request)
     $csv->output();
     exit;
 }
-
-
     
-    // public function somaCredito(Request $request){
-    //     $formasPagamento = $request->input('formas_pagamento', null);
-    //     if($formasPagamento == 'credito'){
-    //         $movimentacoes = Movimentacao::with('cadastro')->where('formas_pagamento', $formasPagamento)->sum('');
-    //     }
-    // }
+public function totalCredito()
+{
+    $movimentacoes = Movimentacao::with('produtos', 'cadastro')
+        ->where('formas_pagamento', 'credito')
+        ->get();
 
+    if ($movimentacoes->isEmpty()) {
+        return response()->json(['message' => 'Nenhuma movimentação encontrada para pagamento em crédito.'], 404);
+    }
+
+    $totalPorUsuario = [];
+
+    foreach ($movimentacoes as $movimentacao) {
+        if (!$movimentacao->cadastro) {
+            continue;
+        }
+
+        $usuarioId = $movimentacao->cadastro->id;
+
+        if (!isset($totalPorUsuario[$usuarioId])) {
+            $totalPorUsuario[$usuarioId] = [
+                'id' => $usuarioId,
+                'nome' => $movimentacao->cadastro->nome,
+                'email' => $movimentacao->cadastro->email,
+                'total_credito' => 0 
+            ];
+        }
+
+        foreach ($movimentacao->produtos as $produto) {
+            $totalPorUsuario[$usuarioId]['total_credito'] += $produto->valor * $produto->quantidade;
+        }
+    }
+
+    return response()->json(array_values($totalPorUsuario), 200);
+}
+
+    public function totalDebito(){
+        $movimentacoes = Movimentacao::with('produtos', 'cadastro')->where('formas_pagamento', 'debito')->get();
+
+        if($movimentacoes->isEmpty()){
+            return response()->json(['message' => 'Nenhuma movimentação encontrada para pagamento em débito.'], 404);
+        }
+
+        $totalPorUsuario = [];
+
+        foreach ($movimentacoes as $movimentacao){
+            if(!$movimentacao->cadastro){
+                continue;
+            }
+
+            $usuarioId = $movimentacao->cadastro->id;
+
+            if(!isset($totalPorUsuario[$usuarioId])){
+                $totalPorUsuario[$usuarioId] = [
+                    'id' => $usuarioId,
+                    'nome' => $movimentacao->cadastro->nome,
+                    'email' => $movimentacao->cadastro->email,
+                    'total_debito' => 0
+                ];
+            }
+
+            foreach ($movimentacao->produtos as $produto) {
+                $totalPorUsuario[$usuarioId]['total_debito'] += $produto->valor * $produto->quantidade;
+            }
+        }
+        return response()->json(array_values($totalPorUsuario), 200);
+    }
+
+    public function totalCreditoDebito() {
+        $movimentacoesC = Movimentacao::with('produtos', 'cadastro')->where('formas_pagamento', 'credito')->get();
+        $movimentacoesD = Movimentacao::with('produtos', 'cadastro')->where('formas_pagamento', 'debito')->get();
+    
+        if ($movimentacoesC->isEmpty() && $movimentacoesD->isEmpty()) {
+            return response()->json(['message' => 'Nenhuma movimentação encontrada para pagamentos em débito e/ou crédito.'], 404);
+        }
+    
+        $totalPorUsuario = [];
+    
+        foreach ($movimentacoesC as $movimentacao) {
+            if (!$movimentacao->cadastro) {
+                continue;
+            }
+    
+            $usuarioId = $movimentacao->cadastro->id;
+    
+            if (!isset($totalPorUsuario[$usuarioId])) {
+                $totalPorUsuario[$usuarioId] = [
+                    'id' => $usuarioId,
+                    'nome' => $movimentacao->cadastro->nome,
+                    'email' => $movimentacao->cadastro->email,
+                    'total_credito' => 0,
+                    'total_debito' => 0, 
+                    'total' => 0 
+                ];
+            }
+    
+            foreach ($movimentacao->produtos as $produto) {
+                $totalPorUsuario[$usuarioId]['total_credito'] += $produto->valor * $produto->quantidade;
+            }
+        }
+    
+        foreach ($movimentacoesD as $movimentacao) {
+            if (!$movimentacao->cadastro) {
+                continue;
+            }
+    
+            $usuarioId = $movimentacao->cadastro->id;
+    
+            if (!isset($totalPorUsuario[$usuarioId])) {
+                $totalPorUsuario[$usuarioId] = [
+                    'id' => $usuarioId,
+                    'nome' => $movimentacao->cadastro->nome,
+                    'email' => $movimentacao->cadastro->email,
+                    'total_credito' => 0,
+                    'total_debito' => 0,
+                    'total' => 0
+                ];
+            }
+    
+            foreach ($movimentacao->produtos as $produto) {
+                $totalPorUsuario[$usuarioId]['total_debito'] += $produto->valor * $produto->quantidade;
+            }
+        }
+    
+        foreach ($totalPorUsuario as $usuarioId => $totais) {
+            $totalPorUsuario[$usuarioId]['total'] = $totais['total_credito'] + $totais['total_debito'];
+        }
+    
+        return response()->json(array_values($totalPorUsuario), 200);
+    }
+    
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -110,7 +232,6 @@ public function export(Request $request)
     
         return response()->json(['message' => 'Movimentação criada com sucesso!'], 201);
     }
-    
 
     public function destroy(Request $request, $id){
         $movimentacao = Movimentacao::find($id);
