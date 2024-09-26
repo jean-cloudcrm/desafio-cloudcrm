@@ -7,7 +7,6 @@
 
 # Instale as Dependências:
     composer install;
-    npm install;
 
 # Crie o arquivo .env:
     cp .env.example .env
