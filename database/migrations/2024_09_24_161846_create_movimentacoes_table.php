@@ -17,7 +17,7 @@ return new class extends Migration
         Schema::create('movimentacoes', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Cadastro::class)->constrained()->onDelete('cascade');
-            $table->enum('formas_pagamento', ['credito', 'debito','boleto','pix']);
+            $table->enum('formas_pagamento', ['credito', 'debito']);
             $table->boolean('bloqueado');
             $table->softDeletes();
             $table->timestamps();
