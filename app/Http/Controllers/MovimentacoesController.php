@@ -58,11 +58,12 @@ public function export(Request $request)
     }
 
     $csv = \League\Csv\Writer::createFromFileObject(new \SplTempFileObject());
-    $csv->insertOne(['nome_produto', 'quantidade_produto', 'valor_produto', 'formas_pagamento', 'nome_usuario', 'email_usuario', 'data_nascimento_usuario', 'bloqueado', 'created_at']);
+    $csv->insertOne(['id_movimentacao','nome_produto', 'quantidade_produto', 'valor_produto', 'formas_pagamento', 'nome_usuario', 'email_usuario', 'data_nascimento_usuario', 'bloqueado', 'created_at']);
 
     foreach ($movimentacoes as $movimentacao) {
         foreach ($movimentacao->produtos as $produto) {
             $csv->insertOne([
+                $movimentacao->id,
                 $produto->nome ?? 'N/A',
                 $produto->quantidade ?? 'N/A',
                 $produto->valor ?? 'N/A',
