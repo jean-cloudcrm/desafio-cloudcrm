@@ -9,12 +9,13 @@ use League\Csv\CharsetConverter;
 use Carbon\Carbon;
 
 use Illuminate\Http\Request;
-
+//Funcional, mas poderiamos utilizar mais laravel aqui, utilizar collections, requests, evitar querys, e simplififcar condicionais;
 class MovimentacoesController extends Controller
 {
 
     public function index(Request $request)
 {
+    //Devemos evitar sempre receber valores da reqest dessa forma, ao utilizar validated() conseguimos diminuir o codigo e garantir maior integridade dos dados recebidos;
     $formasPagamento = $request->input('formas_pagamento', null);
 
     if ($formasPagamento) {
@@ -41,6 +42,7 @@ class MovimentacoesController extends Controller
 public function export(Request $request)
 {
     if ($request->input('ultimos30dias')) {
+        // poderia utilizar apenas now()
         $dataLimite = \Carbon\Carbon::now()->subDays(30);
         $movimentacoes = Movimentacao::with('cadastro', 'produtos')
             ->whereBetween('created_at', [$dataLimite, \Carbon\Carbon::now()])
@@ -94,7 +96,7 @@ public function totalCredito()
     }
 
     $totalPorUsuario = [];
-
+    //Funcional mas poderiamos usar a sintaxe each e trabalharmos com Collections do laravel;
     foreach ($movimentacoes as $movimentacao) {
         if (!$movimentacao->cadastro) {
             continue;
@@ -127,7 +129,7 @@ public function totalCredito()
         }
 
         $totalPorUsuario = [];
-
+        //Funcional mas poderiamos usar a sintaxe each e trabalharmos com Collections do laravel;
         foreach ($movimentacoes as $movimentacao){
             if(!$movimentacao->cadastro){
                 continue;
@@ -152,6 +154,7 @@ public function totalCredito()
     }
 
     public function totalCreditoDebito() {
+        //Aqui voce poderia fazer apenas uma request de movimentacoes, e depois filtrar a colection com where
         $movimentacoesC = Movimentacao::with('produtos', 'cadastro')->where('formas_pagamento', 'credito')->get();
         $movimentacoesD = Movimentacao::with('produtos', 'cadastro')->where('formas_pagamento', 'debito')->get();
     
@@ -160,7 +163,7 @@ public function totalCredito()
         }
     
         $totalPorUsuario = [];
-    
+        //Funcional mas poderiamos usar a sintaxe each e trabalharmos com Collections do laravel;
         foreach ($movimentacoesC as $movimentacao) {
             if (!$movimentacao->cadastro) {
                 continue;
@@ -216,6 +219,7 @@ public function totalCredito()
     
     public function store(Request $request)
 {
+    //Novamente aqui poderiamos criar uma Request personalizada para esse metodo chamando  apenas $request->validated()
     $validated = $request->validate([
         'cadastro_id' => 'required|exists:cadastros,id', 
         'formas_pagamento' => 'required|in:credito,debito,boleto,pix',
@@ -250,5 +254,6 @@ public function totalCredito()
             $movimentacao->delete();
             return response()->json(['message' => 'Movimentacao excluída com sucesso'], 200);
         }   
+        //poderia ter evitado esse else
     }
 }
