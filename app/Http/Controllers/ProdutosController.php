@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Produto;
 use Illuminate\Http\Request;
-
+// OK, mas aqui poderiamos utilizar requests do laravel e simplificar o else;
 class ProdutosController extends Controller
 {
     public function index(Request $request){
@@ -14,10 +14,12 @@ class ProdutosController extends Controller
         } else {
             return response(['message' => 'Cadastro não encontrado', 400]);
         }
+        //Else aqui e desnecessario poderiamos inverter a condicao e remover o else
     }
 
     public function store(Request $request)
     {
+    //Poderiamos aqui criar uma Request personalizada ProdutosControllerRequest, e apenas chamarmos $request->validated();
     $validatedData = $request->validate([
         'nome' => 'required|string',
         'quantidade' => 'required|integer|min:1',
