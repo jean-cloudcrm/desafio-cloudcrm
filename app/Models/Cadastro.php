@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
-
+//Ok
 class Cadastro extends Model
 {
     use HasFactory;
@@ -22,7 +22,7 @@ class Cadastro extends Model
     {
         return $this->hasMany(Movimentacao::class, 'cadastro_id', 'id');
     }
-
+    // Entendi a ideia aqui, mas poderiamos usar a propriedade $casts e incluir o campo que desejar parsear;
     public function getCreatedAtAttribute($value)
     {
         return Carbon::parse($value)->format('d-m-Y H:i:s');
