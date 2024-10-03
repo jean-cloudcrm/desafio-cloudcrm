@@ -3,6 +3,9 @@ use App\Http\Controllers\MovimentacoesController;
 use App\Http\Controllers\CadastrosController;
 use Illuminate\Support\Facades\Route;
 
+//Ok, mas algumas rotas poderiam ser melhoradas e simplificadas, recomendo ler sobre Resource routes na documentação.
+
+//Aqui poderia ser usado resource route para evitar definicao de muitas rotas;
 Route::prefix('cadastro')->group(function(){
     Route::get('/', [CadastrosController::class, 'index'])->name('cadastro-index');
     Route::get('/{id}', [CadastrosController::class, 'show'])->name('cadastro-show');
