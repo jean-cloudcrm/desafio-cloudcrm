@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+// Bom, apenas cuidar com a identação do código
 class Produto extends Model
 {
     use HasFactory;

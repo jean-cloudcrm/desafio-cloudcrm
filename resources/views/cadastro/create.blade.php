@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+{{-- Perfeito --}}
 <div class="mt-5 container">
   <h1>Cadastre um novo usuário:</h1>
   <hr>

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
-
+// Ok
 class Movimentacao extends Model
 {
     use HasFactory;
@@ -31,7 +31,7 @@ class Movimentacao extends Model
     {
         return $this->belongsToMany(Produto::class, 'movimentacao_produto', 'movimentacao_id', 'produto_id');
     }
-
+    //Aqui poderiamos definir a propriedade que precisa desse parse em uma variavel $casts na model;
     public function getCreatedAtAttribute($value)
     {
         return Carbon::parse($value)->format('d-m-Y');

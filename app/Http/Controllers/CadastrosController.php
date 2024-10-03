@@ -6,6 +6,7 @@ use App\Models\Cadastro;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
+//Funcional, mas poderiamos utilizar mais laravel aqui, utilizar collections, requests, evitar querys, e simplififcar condicionais;
 class CadastrosController extends Controller
 {
     public function index(Request $request)
@@ -17,7 +18,7 @@ class CadastrosController extends Controller
     }
     return view('cadastro.index', ['cadastros' => $cadastros]);
     }
-
+    //Aqui poderia ser utilizado a model evitando essa query de cadastro, poderiamos receber na request Cadastro $cadastro;
     public function show(Request $request, $id)
     {
         $cadastro = Cadastro::find($id);
@@ -26,6 +27,7 @@ class CadastrosController extends Controller
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Cadastro não encontrado'], 404);
             }
+            //Poderia utilizar to_route
             return redirect()->route('cadastro-index');
         }
     
@@ -47,6 +49,7 @@ class CadastrosController extends Controller
     public function store(Request $request)
 {
     if ($request->expectsJson()) {
+        //Poderia criar um arquivo para Validacao de request, chamando apenas $request->validated(), php artisan make:request StoreCadastroRequest
         $validatedData = $request->validate([
             'nome' => 'required|string',
             'email' => 'required|string|email',
@@ -67,7 +70,7 @@ class CadastrosController extends Controller
 
     return redirect()->route('cadastro-index');
 }
-
+    //Aqui poderia ser utilizado a model evitando essa query de cadastro, poderiamos receber na request Cadastro $cadastro;
     public function edit($id)
     {
         $cadastros = Cadastro::where('id', $id)->first();
@@ -120,6 +123,7 @@ class CadastrosController extends Controller
         if ($request->expectsJson()) {
             return response()->json(['message' =>'Cadastro excluído com sucesso'], 200);
         }
+        //poderiamos utilizar to_route() shortcut
         return redirect()->route('cadastro-index');
     }
 }

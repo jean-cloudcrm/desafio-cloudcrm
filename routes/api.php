@@ -6,12 +6,12 @@ use App\Http\Controllers\ProdutosController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+//Ok, mas algumas rotas poderiam ser melhoradas e simplificadas, recomendo ler sobre Resource routes na documentação.
 Route::get('/user', function (Request $request) {
     return '$request->user()';
 });
 
-
+//Aqui poderia ser usado apiResource route para evitar definicao de muitas rotas;
 Route::prefix('cadastro')->group(function(){
     Route::get('/', [CadastrosController::class, 'index'])->name('cadastro-index');
     Route::get('/{id}', [CadastrosController::class, 'show']);
@@ -21,7 +21,7 @@ Route::prefix('cadastro')->group(function(){
     Route::put('/{id}',[CadastrosController::class, 'update'])->where('id', '[0-9]+')->name('cadastro-update');
     Route::delete('/{id}',[CadastrosController::class, 'destroy'])->where('id', '[0-9]+')->name('cadastro-destroy');
 });
-
+//Aqui poderia ser usado apiResource route para evitar definicao de muitas rotas;
 Route::prefix('movimentacao')->group(function(){
     Route::get('/', [MovimentacoesController::class, 'index']);
     Route::get('/export', [MovimentacoesController::class, 'export']);

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+{{-- Bom uso do blade aqui, usando rotas nomeadas e expressoes corretas --}}
 <div class="container mt-2">
     <div class="row">
         <div class="col-sm-10">
@@ -29,6 +30,7 @@
         <th>{{$cadastro->id}}</th>
         <td>{{$cadastro->nome}}</td>
         <td>{{$cadastro->email}}</td>
+        {{-- Aqui poderiamos ja parsear essa data do back, para evitar importar o carbon dessa maneira, usando so $casts na model --}}
         <td>{{ \Carbon\Carbon::parse($cadastro->birthday)->format('d/m/Y') }}</td>
         <td>{{ \Carbon\Carbon::parse($cadastro->created_at)->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</td>
         <td>{{ \Carbon\Carbon::parse($cadastro->updated_at)->timezone('America/Sao_Paulo')->format('d/m/Y H:i') }}</td>
